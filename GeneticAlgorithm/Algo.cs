@@ -9,24 +9,12 @@ namespace GenAlgo
         private readonly int randMin = 0;
         private readonly int randMax = 10;
         private readonly Random rnd = new Random();
-        private readonly int[] sidesLen = [1, 2, 3];
         private Arrangement? _bestArrangement;
         public Arrangement BestArrangement { get {
             if (_bestArrangement == null)
                 throw new Exception("solution has not been calculated yet");
             return _bestArrangement;
         } }
-        private List<Square> initSquaresArray(int[] amounts) {
-            var ret = new List<Square>();
-            if (amounts.Length != sidesLen.Length)
-                throw new Exception($"input array parameter must have {sidesLen.Length} length");
-            for (var i = 0; i < amounts.Length; i++) {
-                ret.AddRange(Enumerable.Range(0, amounts[i])
-                .Select(_ => new Square(getRandom(), getRandom(), sidesLen[i]))
-                .ToList());
-            }
-            return ret;
-        }
         private int getRandom() {
             return rnd.Next(randMin, randMax);
         }
