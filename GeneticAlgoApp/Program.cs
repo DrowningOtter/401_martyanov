@@ -3,8 +3,8 @@
 public class Program {
     public static void Main() {
         var algo = new Algorithm();
-        algo.CreateRandomPopulation(100);
-        algo.StartEvolution(1000);
+        algo.CreateRandomPopulation(100, [2, 2, 1]);
+        algo.StartEvolution(100);
         Arrangement bestArrangement = algo.BestArrangement;
         Console.WriteLine("solution found:");
         foreach (var sq in bestArrangement.Lst) {

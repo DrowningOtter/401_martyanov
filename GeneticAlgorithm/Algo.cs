@@ -31,15 +31,14 @@ namespace GenAlgo
             return rnd.Next(randMin, randMax);
         }
 
-        public void CreateRandomPopulation(int size) {
+        public void CreateRandomPopulation(int size, int[] amounts) {
             for (int i = 0; i < size;) {
-                var squaresList = new List<Square> {
-                    new(getRandom(), getRandom(), 1),
-                    new(getRandom(), getRandom(), 1),
-                    new(getRandom(), getRandom(), 2),
-                    new(getRandom(), getRandom(), 2),
-                    new(getRandom(), getRandom(), 3)
-                };
+                var squaresList = new List<Square>();
+                for (int j = 0; j < amounts.Length; ++j) {
+                    squaresList.AddRange(
+                        Enumerable.Range(0, amounts[j])
+                        .Select(s => new Square(getRandom(), getRandom(), j + 1)));
+                }
                 var arrangement = new Arrangement(squaresList);
                 if (!arrangement.HaveCollisions()) {
                     i++;
