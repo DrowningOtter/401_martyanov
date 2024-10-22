@@ -88,6 +88,10 @@ public class ArrangementViewModel : INotifyPropertyChanged
     public void StartWork()
     {
         IsCurrentlyRunning = true;
+        if (workStopper != null)
+        {
+            workStopper.Dispose();
+        }
         workStopper = new CancellationTokenSource();
         algo = new Algorithm{Scale = 1};
         CurBestArea = 0;
