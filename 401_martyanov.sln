@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenAlgo", "GeneticAlgorithm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneticAlgoApp", "GeneticAlgoApp\GeneticAlgoApp.csproj", "{40EB326C-21B3-4E36-ABCB-4DCA9E54E604}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptimalSquaresUI", "OptimalSquaresUI\OptimalSquaresUI.csproj", "{6D53FA27-E2BC-45EE-8C08-32D012A3AFB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{40EB326C-21B3-4E36-ABCB-4DCA9E54E604}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40EB326C-21B3-4E36-ABCB-4DCA9E54E604}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40EB326C-21B3-4E36-ABCB-4DCA9E54E604}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D53FA27-E2BC-45EE-8C08-32D012A3AFB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D53FA27-E2BC-45EE-8C08-32D012A3AFB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D53FA27-E2BC-45EE-8C08-32D012A3AFB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D53FA27-E2BC-45EE-8C08-32D012A3AFB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

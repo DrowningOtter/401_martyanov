@@ -1,36 +1,64 @@
-﻿using System.Linq;
+﻿using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace GenAlgo
 {
-    public class Algorithm
+    public class Algorithm : INotifyPropertyChanged
     {
         private List<Arrangement> population = [];
-        private readonly int randMin = 0;
+        private readonly int randMin = -10;
         private readonly int randMax = 10;
         private readonly Random rnd = new Random();
+        public int Scale { get; set; }
         private Arrangement? _bestArrangement;
+        private readonly object _bestArrLocker = new object();
         public Arrangement BestArrangement { get {
-            if (_bestArrangement == null)
-                throw new Exception("solution has not been calculated yet");
-            return _bestArrangement;
+            lock(_bestArrLocker)
+            {
+                if (_bestArrangement == null)
+                    throw new Exception("solution has not been calculated yet");
+                return _bestArrangement;
+            }
         } }
+        private double _curBestArea;
+        public double CurrentBestArea
+        {
+            get { return _curBestArea; }
+            set
+            {
+                if (_curBestArea != value)
+                {
+                    _curBestArea = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         private int getRandom() {
-            return rnd.Next(randMin, randMax);
+            return (int)((rnd.NextDouble() * (randMax - randMin) + randMin)*Scale);
         }
 
-        public void CreateRandomPopulation(int size, int[] amounts) {
-            for (int i = 0; i < size;) {
+        public void CreateRandomPopulation(int populationSize, int[] amounts) {
+            Console.WriteLine($"creating random population with {populationSize} size");
+            for (int i = 0; i < populationSize;) {
                 var squaresList = new List<Square>();
                 for (int j = 0; j < amounts.Length; ++j) {
                     squaresList.AddRange(
                         Enumerable.Range(0, amounts[j])
-                        .Select(s => new Square(getRandom(), getRandom(), j + 1)));
+                        .Select(s => new Square(getRandom(), getRandom(), (j + 1) * Scale)));
                 }
                 var arrangement = new Arrangement(squaresList);
                 if (!arrangement.HaveCollisions()) {
                     i++;
                     population.Add(arrangement);
+                    // Console.WriteLine($"arrangement added to population: {arrangement}");
                 }
             }
         }
@@ -45,40 +73,69 @@ namespace GenAlgo
             ).ToList());
         }
         private void Mutate(Arrangement arr) {
-            foreach (var sq in arr.Lst) {
-                if (rnd.NextDouble() < 0.1) {
-                    sq.X += rnd.Next(-1, 2);
-                    sq.Y += rnd.Next(-1, 2);
-                }
+            Parallel.For(0, arr.Lst.Count, i => MutateOne(arr.Lst[i]));
+        }
+        private void MutateOne(Square sq)
+        {
+            if (rnd.NextDouble() < 0.2) {
+                sq.X += rnd.Next(-1, 2) * Scale;
+                sq.Y += rnd.Next(-1, 2) * Scale;
             }
         }
 
         private void EvolvePopulation() {
             var bestArrangements = population.OrderBy(s => s.CalcCoverageArea()).Take(population.Count() / 2).ToList();
-            var newPopulation = new List<Arrangement>();
-            while (newPopulation.Count < population.Count) {
-                var child = Crossover(bestArrangements[rnd.Next(bestArrangements.Count)], bestArrangements[rnd.Next(bestArrangements.Count)]);
-                Mutate(child);
-                if (!child.HaveCollisions())
-                    newPopulation.Add(child);
+            var newPopulation = new ConcurrentBag<Arrangement>();
+            var tasks = new Task[population.Count];
+            for (int i = 0; i < population.Count; i++)
+            {
+                tasks[i] = Task.Run(() => {
+                    while (true)
+                    {
+                        var child = Crossover(bestArrangements[rnd.Next(bestArrangements.Count)], bestArrangements[rnd.Next(bestArrangements.Count)]);
+                        Mutate(child);
+                        if (!child.HaveCollisions())
+                        {
+                            newPopulation.Add(child);
+                            break;
+                        }
+                    }
+                });
             }
-            population = newPopulation;
+            try
+            {
+                Task.WaitAll(tasks);
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var e in ex.InnerExceptions)
+                {
+                    if (e is TaskCanceledException)
+                        Console.WriteLine("Task was cancelled");
+                    else
+                        throw e;
+                }
+            }
+            population = newPopulation.ToList();
         }
 
-        public void StartEvolution(int maxGenerations) {
+        public void StartEvolution(int maxGenerations, CancellationToken token) {
+            Console.WriteLine($"starting evolution with maximum generations: {maxGenerations}");
             var generation = 0;
-            while (generation < maxGenerations) {
-                var bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
-                Console.WriteLine($"#{generation} generation, best area is {bestArrangement.CalcCoverageArea()}");
-                EvolvePopulation();
-                if (Console.KeyAvailable) {
-                    Console.ReadKey();
-                    _bestArrangement = bestArrangement;
-                    return;
+            // while (generation < maxGenerations) {
+            lock(_bestArrLocker)
+            {
+                while (true) {
+                    if (token.IsCancellationRequested)
+                        break;
+                    var bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
+                    Console.WriteLine($"#{generation} generation, best area is {bestArrangement.CalcCoverageArea()}");
+                    CurrentBestArea = bestArrangement.CalcCoverageArea();
+                    EvolvePopulation();
+                    generation++;
                 }
-                generation++;
+                _bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
             }
-            _bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
         }
     }
 }
