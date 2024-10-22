@@ -2,9 +2,9 @@
 
 public class Program {
     public static void Main() {
-        var algo = new Algorithm{Scale = 1};
-        algo.CreateRandomPopulation(1000, [2, 2, 1, 5]);
-        algo.StartEvolution(1000);
+        var algo = new Algorithm();
+        algo.CreateRandomPopulation(100, [2, 2, 1]);
+        algo.StartEvolution(100);
         Arrangement bestArrangement = algo.BestArrangement;
         Console.WriteLine("solution found:");
         foreach (var sq in bestArrangement.Lst) {
