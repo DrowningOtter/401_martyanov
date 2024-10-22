@@ -58,7 +58,6 @@ namespace GenAlgo
                 if (!arrangement.HaveCollisions()) {
                     i++;
                     population.Add(arrangement);
-                    // Console.WriteLine($"arrangement added to population: {arrangement}");
                 }
             }
         }
@@ -102,27 +101,12 @@ namespace GenAlgo
                     }
                 });
             }
-            try
-            {
-                Task.WaitAll(tasks);
-            }
-            catch (AggregateException ex)
-            {
-                foreach (var e in ex.InnerExceptions)
-                {
-                    if (e is TaskCanceledException)
-                        Console.WriteLine("Task was cancelled");
-                    else
-                        throw e;
-                }
-            }
+            Task.WaitAll(tasks);
             population = newPopulation.ToList();
         }
 
         public void StartEvolution(int maxGenerations, CancellationToken token) {
-            Console.WriteLine($"starting evolution with maximum generations: {maxGenerations}");
             var generation = 0;
-            // while (generation < maxGenerations) {
             lock(_bestArrLocker)
             {
                 while (true) {
