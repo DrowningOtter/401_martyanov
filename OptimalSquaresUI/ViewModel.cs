@@ -82,6 +82,7 @@ public class ArrangementViewModel : INotifyPropertyChanged
         if (algo == null || workStopper == null)
             throw new Exception("work has not been started yet");
         workStopper.Cancel();
+        workStopper.Dispose();
         Arr = algo.BestArrangement;
         IsCurrentlyRunning = false;
     }
