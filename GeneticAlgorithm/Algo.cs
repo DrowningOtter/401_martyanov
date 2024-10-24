@@ -12,16 +12,6 @@ namespace GenAlgo
         private readonly int randMax = 10;
         private readonly Random rnd = new Random();
         public int Scale { get; set; }
-        private Arrangement? _bestArrangement;
-        private readonly object _bestArrLocker = new object();
-        public Arrangement BestArrangement { get {
-            lock(_bestArrLocker)
-            {
-                if (_bestArrangement == null)
-                    throw new Exception("solution has not been calculated yet");
-                return _bestArrangement;
-            }
-        } }
         private double _curBestArea;
         public double CurrentBestArea
         {
@@ -33,6 +23,16 @@ namespace GenAlgo
                     _curBestArea = value;
                     OnPropertyChanged();
                 }
+            }
+        }
+        private Arrangement _instantArrangement = new Arrangement([]);
+        public Arrangement InstantArrangement
+        {
+            get { return _instantArrangement.Clone(); }
+            set
+            {
+                _instantArrangement = value;
+                OnPropertyChanged();
             }
         }
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -107,18 +107,15 @@ namespace GenAlgo
 
         public void StartEvolution(int maxGenerations, CancellationToken token) {
             var generation = 0;
-            lock(_bestArrLocker)
-            {
-                while (true) {
-                    if (token.IsCancellationRequested)
-                        break;
-                    var bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
-                    Console.WriteLine($"#{generation} generation, best area is {bestArrangement.CalcCoverageArea()}");
-                    CurrentBestArea = bestArrangement.CalcCoverageArea();
-                    EvolvePopulation();
-                    generation++;
-                }
-                _bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
+            while (true) {
+                if (token.IsCancellationRequested)
+                    break;
+                var bestArrangement = population.OrderBy(arr => arr.CalcCoverageArea()).First();
+                Console.WriteLine($"#{generation} generation, best area is {bestArrangement.CalcCoverageArea()}");
+                InstantArrangement = bestArrangement.Clone();
+                CurrentBestArea = bestArrangement.CalcCoverageArea();
+                EvolvePopulation();
+                generation++;
             }
         }
     }

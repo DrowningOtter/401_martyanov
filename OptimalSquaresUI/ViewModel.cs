@@ -6,19 +6,9 @@ namespace OptimalSquaresUI;
 
 public class ArrangementViewModel : INotifyPropertyChanged
 {
-    private Arrangement? _arr;
     public bool IsCurrentlyRunning = false;
     public CancellationTokenSource? workStopper;
     private Algorithm? algo;
-    public Arrangement? Arr
-    {
-        get { return _arr; }
-        set
-        {
-            _arr = value;
-            OnPropertyChanged();
-        }
-    }
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -56,6 +46,22 @@ public class ArrangementViewModel : INotifyPropertyChanged
             }
         }
     }
+    public Arrangement InstantArrangement
+    {
+        get { return _instantArr.Clone(); }
+        set
+        {
+            _instantArr = value;
+            OnPropertyChanged();
+        }
+    }
+    private Arrangement _instantArr = new Arrangement([]);
+    public void UpdateInstantArrangement(object? sender, PropertyChangedEventArgs e)
+    {
+        if (algo == null) return;
+        if (e.PropertyName == nameof(algo.InstantArrangement))
+            InstantArrangement = algo.InstantArrangement;
+    }
     // default value
     public int[] Amounts = [2, 2, 1];
     private int _maxGenerations;
@@ -83,7 +89,6 @@ public class ArrangementViewModel : INotifyPropertyChanged
             throw new Exception("work has not been started yet");
         workStopper.Cancel();
         workStopper.Dispose();
-        Arr = algo.BestArrangement;
         IsCurrentlyRunning = false;
     }
     public void StartWork()
@@ -97,6 +102,7 @@ public class ArrangementViewModel : INotifyPropertyChanged
         algo = new Algorithm{Scale = 1};
         CurBestArea = 0;
         algo.PropertyChanged += UpdateCurBestArea;
+        algo.PropertyChanged += UpdateInstantArrangement;
         algo.CreateRandomPopulation(PopulationSize, Amounts);
         algo.StartEvolution(MaxGenerations, workStopper.Token);
     }

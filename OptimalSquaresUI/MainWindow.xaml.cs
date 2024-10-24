@@ -32,7 +32,7 @@ public partial class MainWindow : Window
 
         this.DataContext = viewModel;
 
-        viewModel.PropertyChanged += ViewModelArrangementPropertyChanged;
+        viewModel.PropertyChanged += ViewModelInstantArrangementUpdated;
 
         SizeChanged += RenewArrEventHandeWrapper;
     }
@@ -53,7 +53,7 @@ public partial class MainWindow : Window
     }
     private void LoadArrangement(Arrangement? arr)
     {
-        if (arr == null)
+        if (arr == null || arr.Lst.Count == 0)
         {
             return;
         }
@@ -66,9 +66,9 @@ public partial class MainWindow : Window
     }
     private void RenewArrEventHandeWrapper(object sender, RoutedEventArgs e)
     {
-        RenewArr();
+        RenewArr(viewModel.InstantArrangement);
     }
-    private void RenewArr()
+    private void RenewArr(Arrangement? arr)
     {
         // recalc scale
         var scaleFactor = Math.Min(canvas.ActualHeight, canvas.ActualWidth);
@@ -78,12 +78,12 @@ public partial class MainWindow : Window
             canvas.Children.Remove(drawedSquares[i]);
         }
         drawedSquares = [];
-        LoadArrangement(viewModel.Arr);
+        LoadArrangement(arr);
     }
-    private void ViewModelArrangementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void ViewModelInstantArrangementUpdated(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(viewModel.Arr))
-            RenewArr();
+        if (e.PropertyName == nameof(viewModel.InstantArrangement))
+            Dispatcher.Invoke(() => {RenewArr(viewModel.InstantArrangement);});
     }
 
     private int[] _amounts = [2, 2, 1];

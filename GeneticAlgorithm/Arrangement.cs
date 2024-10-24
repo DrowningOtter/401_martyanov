@@ -5,6 +5,13 @@ namespace GenAlgo
     public class Arrangement(List<Square> array)
     {
         public List<Square> Lst { get; set; } = array;
+        public Arrangement Clone()
+        {
+            var lst = new List<Square>();
+            foreach (var sq in Lst)
+                lst = lst.Append(sq.Clone()).ToList();
+            return new Arrangement(lst);
+        }
         private static Random rnd = new Random();
         public double CalcCoverageArea()
         {
