@@ -1,0 +1,10 @@
+<Window x:Class="OptimalSquaresUI.LoadPopulation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Select Experiment" Height="300" Width="400">
+    <Grid>
+        <ListBox x:Name="PopulationChoices" HorizontalAlignment="Left" Height="200" VerticalAlignment="Top" Width="300"/>
+        <Button Content="OK" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="100" Click="OkClicked"/>
+        <Button Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="100" Click="CancelClicked"/>
+    </Grid>
+</Window>

@@ -25,6 +25,11 @@ namespace GenAlgo
                 }
             }
         }
+        public List<Arrangement> Population
+        {
+            get { return population; }
+            set { population = value; }
+        }
         private Arrangement _instantArrangement = new Arrangement([]);
         public Arrangement InstantArrangement
         {

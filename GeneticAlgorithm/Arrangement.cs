@@ -2,9 +2,19 @@ using System.Runtime.CompilerServices;
 
 namespace GenAlgo
 {
-    public class Arrangement(List<Square> array)
+    public class Arrangement
     {
-        public List<Square> Lst { get; set; } = array;
+        public int ArrangementId { get; set; }
+        public Population? Population { get; set; }
+        public List<Square> Lst { get; set; }
+        public Arrangement(List<Square> array)
+        {
+            Lst = array;
+        }
+        public Arrangement()
+        {
+            this.Lst = [];
+        }
         public Arrangement Clone()
         {
             var lst = new List<Square>();

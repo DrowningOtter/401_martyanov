@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using GenAlgo;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace OptimalSquaresUI;
 
@@ -9,6 +10,7 @@ public class ArrangementViewModel : INotifyPropertyChanged
     public bool IsCurrentlyRunning = false;
     public CancellationTokenSource? workStopper;
     private Algorithm? algo;
+    public AlgoContext db;
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -79,8 +81,46 @@ public class ArrangementViewModel : INotifyPropertyChanged
     }
     public ArrangementViewModel()
     {
+        db = new AlgoContext();
         PopulationSize = 100;
         MaxGenerations = 100;
+    }
+
+    public void SavePopulation(string name)
+    {
+        if (algo == null || IsCurrentlyRunning)
+        {
+            return;
+        }
+        var pop = new Population{Name = name};
+        pop.Arrs = algo.Population;
+        db.Populations.Add(pop);
+        db.SaveChanges();
+    }
+
+    public string[] GetPopulationsNames()
+    {
+        var names = db.Populations.Select(p => p.Name).ToArray();
+        return names;
+    }
+
+    public void LoadPopulation(string name)
+    {
+        if (this.algo == null)
+            this.algo = new Algorithm();
+        var pop = db.Populations.Select(p => p).Where(p => p.Name == name).First();
+        pop.Arrs = db.Arrangements.Select(p => p).Where(a => a.Population.Id == pop.Id).ToList();
+        foreach (var ar in pop.Arrs)
+        {
+            ar.Lst = db.Sqaures.Select(s => s).Where(s => s.Arrangement.ArrangementId == ar.ArrangementId).ToList();
+        }
+        this.algo.Population = pop.Arrs;
+        InstantArrangement = pop.Arrs.OrderBy(p => p.CalcCoverageArea()).First();
+    }
+
+    public bool CanStartWork()
+    {
+        return !IsCurrentlyRunning && algo != null && algo.Population.Count > 0;
     }
 
     public void StopWork()
@@ -91,6 +131,12 @@ public class ArrangementViewModel : INotifyPropertyChanged
         workStopper.Dispose();
         IsCurrentlyRunning = false;
     }
+    public void ResetAlgo()
+    {
+        algo = null;
+        InstantArrangement = new Arrangement();
+        CurBestArea = 0;
+    }
     public void StartWork()
     {
         IsCurrentlyRunning = true;
@@ -99,11 +145,16 @@ public class ArrangementViewModel : INotifyPropertyChanged
             workStopper.Dispose();
         }
         workStopper = new CancellationTokenSource();
-        algo = new Algorithm{Scale = 1};
-        CurBestArea = 0;
+        if (algo == null)
+            algo = new Algorithm{Scale = 1};
         algo.PropertyChanged += UpdateCurBestArea;
         algo.PropertyChanged += UpdateInstantArrangement;
-        algo.CreateRandomPopulation(PopulationSize, Amounts);
+        var size = algo.Population.Count;
+        if (size == 0)
+        {
+            algo.CreateRandomPopulation(PopulationSize, Amounts);
+        }
+        CurBestArea = algo.CurrentBestArea;
         algo.StartEvolution(MaxGenerations, workStopper.Token);
     }
 }

@@ -2,6 +2,8 @@ namespace GenAlgo
 {
     public class Square(int x, int y, int size)
     {
+        public int Id { get; set; }
+        public Arrangement? Arrangement { get; set; }
         // top left corner coordinates
         public int X { get; set; } = x;
         public int Y { get; set; } = y;

@@ -89,6 +89,11 @@ public partial class MainWindow : Window
     private int[] _amounts = [2, 2, 1];
     private void IsStartCalculationsAllowed(object sender, CanExecuteRoutedEventArgs e)
     {
+        if (viewModel.CanStartWork())
+        {
+            e.CanExecute = true;
+            return;
+        }
         bool isCorrectAmounts = true;
         // check if array with amounts is correct
         try
@@ -116,5 +121,30 @@ public partial class MainWindow : Window
     {
         // stop the running calculations here
         viewModel.StopWork();
+    }
+    private void OpenSaveWindow(object sender, RoutedEventArgs e)
+    {
+        try {
+            viewModel.StopWork();
+        }
+        catch (Exception)
+        {
+        }
+        var saveWindow = new SaveAlgoDialog{viewModel = viewModel};
+        saveWindow.ShowDialog();
+    }
+    private void OpenLoadWindow(object sender, RoutedEventArgs e)
+    {
+        var names = viewModel.GetPopulationsNames();
+        var loadWindow = new LoadPopulation(names, viewModel);
+        loadWindow.ShowDialog();
+    }
+    private void ResetArrangement(object sender, ExecutedRoutedEventArgs e)
+    {
+        viewModel.ResetAlgo();
+    }
+    private void CanReset(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !viewModel.IsCurrentlyRunning;
     }
 }
